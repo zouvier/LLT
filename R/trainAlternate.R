@@ -19,6 +19,7 @@ transformRealData <- function(path, real_data_files, train_law, select = "rank",
     }
   }
 
+
   dim <- nrow(train_law)
   dict <- list.dirs(path = path,full.names = FALSE)
   dict <- dict[2:length(dict)]
