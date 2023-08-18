@@ -22,7 +22,7 @@ transformRealData <- function(real_data_files, train_law, select = "rank", lag =
   dim <- nrow(train_law)
   s <- 0
   
-  for file in real_data_files:
+  for (file in real_data_files) {
     dt <- read.csv(file, sep="\t", header = TRUE)
 
     for(k in 1:ncol(dt)){
@@ -65,4 +65,5 @@ transformRealData <- function(real_data_files, train_law, select = "rank", lag =
   rownames(out) <- 1:nrow(out)
 
   return(out)
+}
 }
