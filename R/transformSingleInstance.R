@@ -1,4 +1,4 @@
-transformSingleInstance <- function(real_data_file, train_law, select = "var", lag = 11){
+transformSingleInstance <- function(real_data_file, train_law, select = "rank", lag = 1){
   
   sfun <- switch(select,
                  mean = function(x) x[, which.min(abs(colMeans(x)))],
@@ -20,10 +20,10 @@ transformSingleInstance <- function(real_data_file, train_law, select = "var", l
     tmp <- as.matrix(train_law[, idx])
     emb <- LLT::embed(dt[, k], dim_law, lag)
 
-    for(l in 1:ncol(train_law)){
+    for(l in 1:ncol(tmp)){
       tmp2 <- as.matrix(tmp[, l])
       tmp2_transformed <- emb %*% tmp2
-      out_matrix[, (k-1)*ncol(train_law) + l] <- sfun(tmp2_transformed)
+      out_matrix[, (k-1)*ncol(tmp) + l] <- sfun(tmp2_transformed)
     }
   }
 
