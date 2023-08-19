@@ -11,11 +11,13 @@ transformSingleInstance <- function(real_data_file, train_law, select = "rank", 
 
   dim_law <- nrow(train_law)
   
-  dt <- read.csv(real_data_file, sep="\t", header = TRUE)
+  dt_raw <- read.csv(real_data_file, sep="\t", header = TRUE)
+  dt <- matrix(as.numeric(unlist(dt_raw)), ncol=6, byrow=TRUE) # Reshape the data
+  
   out_matrix <- matrix(0, nrow = dim_law, ncol = ncol(dt) * ncol(train_law))
 
   for(k in 1:ncol(dt)){
-    cn <- colnames(dt)[k]
+    cn <- colnames(dt_raw)[(k-1)*144 + 1] # Adjusted column name extraction
     idx <- sub("\\#.*", "", colnames(train_law)) == cn
     tmp <- as.matrix(train_law[, idx])
     emb <- LLT::embed(dt[, k], dim_law, lag)
