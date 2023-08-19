@@ -5,6 +5,9 @@ embed <- function(series, dim, lag = 1){
   tmp <- seq(1, len, lag)
   tmp <- tmp[tmp < (len - dim + 2)]
   
+  print(paste("Length of series:", len))
+  print(paste("Length of tmp:", length(tmp)))
+  
   out <- NULL  # Initialize out
   
   for(i in tmp){
@@ -12,12 +15,13 @@ embed <- function(series, dim, lag = 1){
     
     if(is.null(out)){
       out <- mtx
-    } else if (!exists("out")) {
-       out <- mtx
-    }
-     else {
+    } else {
       out <- rbind(out, mtx)
     }
+  }
+  
+  if(is.null(out)){
+    stop("The 'out' matrix was not populated. Check the input series and parameters.")
   }
   
   out <- t(out) %*% out
