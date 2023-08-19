@@ -15,14 +15,17 @@ embed <- function(series, dim, lag = 1){
     
     if(is.null(out)){
       out <- mtx
-    } else {
+    } else if (!exists("out")) {
+       out <- mtx
+    }
+    else {
       out <- rbind(out, mtx)
     }
   }
   
-  if(is.null(out)){
-    stop("The 'out' matrix was not populated. Check the input series and parameters.")
-  }
+  # if(is.null(out)){
+  #   stop("The 'out' matrix was not populated. Check the input series and parameters.")
+  # }
   
   out <- t(out) %*% out
   
