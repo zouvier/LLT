@@ -14,6 +14,7 @@ transformSingleInstance <- function(real_data_file, train_law, select = "rank", 
   dt_raw <- read.csv(real_data_file, sep="\t", header = TRUE)
   dt <- matrix(as.numeric(unlist(dt_raw)), ncol=6, byrow=TRUE) # Reshape the data
   
+  # Initialize the output matrix based on the number of transformations in train_law
   out_matrix <- matrix(0, nrow = dim_law, ncol = ncol(dt) * ncol(train_law))
 
   for(k in 1:ncol(dt)){
@@ -22,10 +23,10 @@ transformSingleInstance <- function(real_data_file, train_law, select = "rank", 
     tmp <- as.matrix(train_law[, idx])
     emb <- LLT::embed(dt[, k], dim_law, lag)
 
-    for(l in 1:ncol(tmp)){
-      tmp2 <- as.matrix(tmp[, l])
-      tmp2_transformed <- emb %*% tmp2
-      out_matrix[, (k-1)*ncol(tmp) + l] <- sfun(tmp2_transformed)
+    for(l in 1:ncol(tmp)){ # Loop over all transformations for the feature
+        tmp2 <- as.matrix(tmp[, l])
+        tmp2_transformed <- emb %*% tmp2
+        out_matrix[, (k-1)*ncol(tmp) + l] <- sfun(tmp2_transformed)
     }
   }
 
