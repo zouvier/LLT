@@ -21,7 +21,7 @@ transformRealData <- function(real_data_files, train_law, select = "rank", lag =
 
   dim <- nrow(train_law)
   s <- 0
-  
+   
   for (file in real_data_files) {
     dt <- read.csv(file, sep="\t", header = TRUE)
 
@@ -31,39 +31,35 @@ transformRealData <- function(real_data_files, train_law, select = "rank", lag =
       tmp <- as.matrix(train_law[,idx])
       emb <- LLT::embed(dt[,k],dim,lag)
 
-      for(l in 1:length(dict)){
-        idx <- sub(".*#","",colnames(tmp)) == dict[l]
-        tmp2 <- as.matrix(tmp[,idx])
-        tmp2 <- emb%*%tmp2
+      # Assuming you want to apply the transformation for each column in train_law
+      for(l in 1:ncol(train_law)){
+        tmp2 <- as.matrix(tmp[,l])
+        tmp2 <- emb %*% tmp2
         tmp2 <- sfun(tmp2)
-        colnames(tmp2) <- paste(cn,"_",dict[l],sep="")
+        colnames(tmp2) <- paste(cn, "_", l, sep="")
 
         if(!exists("tmp3")){
           tmp3 <- tmp2
         }else{
-          tmp3 <- cbind(tmp3,tmp2)
+          tmp3 <- cbind(tmp3, tmp2)
         }
       }
     }
 
     if(!exists("out")){
-      tmp3 <- cbind(tmp3,dict[i])
-      colnames(tmp3)[ncol(tmp3)] <- "class"
       out <- tmp3
       rm(tmp3)
     }else{
-      tmp3 <- cbind(tmp3,dict[i])
-      colnames(tmp3)[ncol(tmp3)] <- "class"
-      out <- rbind(tmp3,out)
+      out <- rbind(tmp3, out)
       rm(tmp3)
     }
     
     s <- s + 1
+  }
 
   out <- as.data.frame(out)
-  colnames(out) <- make.unique(colnames(out),sep="_")
+  colnames(out) <- make.unique(colnames(out), sep="_")
   rownames(out) <- 1:nrow(out)
 
   return(out)
-}
 }
