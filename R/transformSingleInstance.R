@@ -1,35 +1,41 @@
-transformSingleInstance <- function(real_data_file, train_law, select = "rank", lag = 1){
+transformSingleSeries <- function(single_series, train_law, select = "var", lag = 11){
   
-  sfun <- switch(select,
-                 mean = function(x) x[, which.min(abs(colMeans(x)))],
-                 var = function(x) x[, which.min(apply(x, 2, var))],
-                 {
-                   a <- rank(abs(colSums(x)), ties.method = "min")
-                   b <- rank(apply(x, 2, var), ties.method = "min")
-                   x[, which.min(a + b)]
-                 })
-
-  dim_law <- nrow(train_law)
-  
-  dt_raw <- read.csv(real_data_file, sep="\t", header = TRUE)
-  dt <- matrix(as.numeric(unlist(dt_raw)), ncol=6, byrow=TRUE) # Reshape the data
-  
-  # Initialize the output matrix based on the number of transformations in train_law
-  out_matrix <- matrix(0, nrow = dim_law, ncol = ncol(dt) * ncol(train_law))
-
-  for(k in 1:ncol(dt)){
-    cn <- colnames(dt_raw)[(k-1)*144 + 1] # Adjusted column name extraction
-    idx <- sub("\\#.*", "", colnames(train_law)) == cn
-    tmp <- as.matrix(train_law[, idx])
-    emb <- LLT::embed(dt[, k], dim_law, lag)
-
-    for(l in 1:ncol(tmp)){ # Loop over all transformations for the feature
-        tmp2 <- as.matrix(tmp[, l])
-        tmp2_transformed <- emb %*% tmp2
-        out_matrix[, (k-1)*ncol(tmp) + l] <- sfun(tmp2_transformed)
+  # Selection function based on the 'select' parameter
+  if(select == "mean"){
+    sfun <- function(x) {
+      x <- as.data.frame(x[,which.min(abs(sapply(as.data.frame(x),FUN = mean)))])
+      return(x)
+    }
+  }else if(select == "var"){
+    sfun <- function(x) {
+      x <- as.data.frame(x[,which.min(sapply(as.data.frame(x),FUN = var))])
+      return(x)
+    }
+  }else{
+    sfun <- function(x){
+      a <- rank(abs(colSums((x))),ties.method = "min")
+      b <- rank(sapply(as.data.frame(x),FUN = var),ties.method = "min")
+      x <- as.data.frame(x[,which.min(a + b)])
+      return(x)
     }
   }
 
-  out_df <- as.data.frame(out_matrix)
-  return(out_df)
+  dim <- nrow(train_law)
+  
+  # Embed the single series
+  emb <- LLT::embed(single_series, dim, lag)
+  
+  # Initialize an empty matrix for the transformed series
+  transformed_series <- matrix(0, nrow = nrow(emb), ncol = ncol(train_law))
+  
+  # Transform the single series based on the linear laws
+  for(l in 1:ncol(train_law)){
+    tmp2 <- emb %*% matrix(train_law[,l], ncol = 1)
+    transformed_series[,l] <- tmp2[,1]
+  }
+  
+  # Apply the selection function
+  transformed_series <- sfun(transformed_series)
+  
+  return(transformed_series)
 }
